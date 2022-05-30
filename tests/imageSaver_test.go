@@ -14,16 +14,6 @@ func TestImageSaver(t *testing.T) {
 	CdTempDir()
 	outputDir := "images"
 
-	i := imageSaver.New(imageSaver.Option{
-		CanvasWidth:     1280,
-		CanvasHeight:    720,
-		FontPoints:      64,
-		FontName:        "D2Coding.ttf",
-		FontColor:       "#fff",
-		BackgroundColor: "#000",
-		OutputDir:       outputDir,
-	})
-
 	lines := []line.Line{
 		{"Hello", 0},
 		{"Word", 0},
@@ -49,7 +39,19 @@ func TestImageSaver(t *testing.T) {
 		{"Word 한글 테스트 한글 테스트 한글", 0},
 		{"Word 한글 테스트 한글 테스트 한글", 0},
 	}
-	is.Nil(i.SaveImages(lines))
+
+	i := imageSaver.New(imageSaver.Option{
+		CanvasWidth:     1280,
+		CanvasHeight:    720,
+		FontPoints:      64,
+		FontName:        "D2Coding.ttf",
+		FontColor:       "#fff",
+		BackgroundColor: "#000",
+		OutputDir:       outputDir,
+		Lines:           lines,
+	})
+
+	is.Nil(i.SaveImages())
 
 	count, err := fileutil.Count(outputDir, false)
 	is.Nil(err)
@@ -60,16 +62,6 @@ func TestImageSaverTooLong(t *testing.T) {
 	is := assert.New(t)
 	CdTempDir()
 	imagesOutput := "images"
-
-	i := imageSaver.New(imageSaver.Option{
-		CanvasWidth:     1280,
-		CanvasHeight:    720,
-		FontPoints:      64,
-		FontName:        "D2Coding.ttf",
-		FontColor:       "#fff",
-		BackgroundColor: "#000",
-		OutputDir:       imagesOutput,
-	})
 
 	lines := []line.Line{
 		{"Hello", 0},
@@ -96,5 +88,15 @@ func TestImageSaverTooLong(t *testing.T) {
 		{"Word 한글 테스트 한글 테스트 한글", 0},
 		{"Word 한글 테스트 한글 테스트 한글", 0},
 	}
-	is.NotNil(i.SaveImages(lines))
+	i := imageSaver.New(imageSaver.Option{
+		CanvasWidth:     1280,
+		CanvasHeight:    720,
+		FontPoints:      64,
+		FontName:        "D2Coding.ttf",
+		FontColor:       "#fff",
+		BackgroundColor: "#000",
+		OutputDir:       imagesOutput,
+		Lines:           lines,
+	})
+	is.NotNil(i.SaveImages())
 }

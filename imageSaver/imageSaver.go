@@ -10,21 +10,19 @@ import (
 	"github.com/fogleman/gg"
 	"github.com/samber/lo"
 	"github.com/wirekang/autovideo/colorutil"
+	"github.com/wirekang/autovideo/fileutil"
 	"github.com/wirekang/autovideo/line"
 	"golang.org/x/image/font"
 )
 
-type Interface interface {
-	SaveImages(lines []line.Line) error
-}
-
-type inner struct {
+type ImageSaver struct {
 	canvasW, canvasH int
 	fontColor        color.Color
 	bgColor          color.Color
 	fontFace         font.Face
 	outputDir        string
 	filePrefix       string
+	lines            []line.Line
 }
 
 type Option struct {
@@ -34,42 +32,45 @@ type Option struct {
 	FontName   string
 	FontColor,
 	BackgroundColor string
-	OutputDir string
+	OutputDir       string
+	Lines           []line.Line
+	ImageFilePrefix string
 }
 
-func New(o Option) Interface {
+func New(o Option) *ImageSaver {
 	fontColor := lo.Must(colorutil.ParseHexColor(o.FontColor))
 	bgColor := lo.Must(colorutil.ParseHexColor(o.BackgroundColor))
 	fontFace := lo.Must(loadFontFace(o.FontName, o.FontPoints))
 	lo.Must0(os.MkdirAll(o.OutputDir, os.ModeDir))
 
-	return &inner{
+	return &ImageSaver{
 		outputDir:  o.OutputDir,
 		canvasW:    o.CanvasWidth,
 		canvasH:    o.CanvasHeight,
 		fontColor:  fontColor,
 		bgColor:    bgColor,
 		fontFace:   fontFace,
-		filePrefix: "output",
+		filePrefix: o.ImageFilePrefix,
+		lines:      o.Lines,
 	}
 }
 
-func (i *inner) SaveImages(lines []line.Line) error {
+func (i *ImageSaver) SaveImages() error {
 	c := gg.NewContext(i.canvasW, i.canvasH)
 	c.SetFontFace(i.fontFace)
 
-	for j, line := range lines {
+	for j, l := range i.lines {
 		c.SetColor(i.bgColor)
 		c.Clear()
 		c.SetColor(i.fontColor)
-		err := draw(c, line.Text)
+		err := draw(c, l.Text)
 		if err != nil {
-			return fmt.Errorf("can't draw line %d(%s): %w", j, fmtLine(line), err)
+			return fmt.Errorf("can't draw line %d(%s): %w", j, fmtLine(l), err)
 		}
 
 		err = save(c, i.outputDir, i.filePrefix, j)
 		if err != nil {
-			return fmt.Errorf("can't save line %d(%s): %w", j, fmtLine(line), err)
+			return fmt.Errorf("can't save line %d(%s): %w", j, fmtLine(l), err)
 		}
 	}
 	return nil
@@ -80,7 +81,7 @@ func fmtLine(l line.Line) string {
 }
 
 func save(c *gg.Context, outputDir string, filePrefix string, i int) error {
-	dst := path.Join(outputDir, fmt.Sprintf("%s%d.png", filePrefix, i))
+	dst := path.Join(outputDir, fileutil.ImageName(filePrefix, i))
 	return c.SavePNG(dst)
 }
 

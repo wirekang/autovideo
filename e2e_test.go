@@ -26,42 +26,43 @@ func TestInit(t *testing.T) {
 	is.JSONEq(string(v), string(v))
 }
 
-func TestImageSave(t *testing.T) {
+func TestTest1(t *testing.T) {
 	is := assert.New(t)
 	tests.CdTempDir()
 
-	outputDir := "outputDir"
+	outputFile := "output.mp4"
 	cfgPath := "testconfigname.json"
 	linesPath := "lines.json"
-	tests.SetArgs("--config="+cfgPath, "--output="+outputDir, linesPath)
+	tests.SetArgs("--config="+cfgPath, "--output="+outputFile, linesPath)
+
 	is.Nil(os.WriteFile(cfgPath, []byte(fmt.Sprintf(`
 {
   "image_width": 1280,
   "image_height": 720,
-  "font_color": "#000",
-  "background_color": "#fff",
+  "font_color": "#fff",
+  "background_color": "#000",
   "font_name": "D2Coding.ttf",
-  "file_prefix": "image",
   "font_size": 64
 }
 `)), 0666))
 
 	is.Nil(os.WriteFile(linesPath, []byte(`
 [
-	{ "text": "This is text index 0", "millis": 1000 },
-	{ "text": "This is text index 1", "millis": 1001 },
-	{ "text": "This is text index 2", "millis": 1002 },
+	{ "text": "This is text index 0", "millis": 4000 },
+	{ "text": "This is text index 1", "millis": 3001 },
+	{ "text": "This is text index 2", "millis": 2002 },
 	{ "text": "This is text index 3", "millis": 1003 },
-	{ "text": "This is text index 4", "millis": 1004 },
-	{ "text": "This is text index 5", "millis": 1005 },
-	{ "text": "This is text index 6", "millis": 1006 },
-	{ "text": "This is text index 7", "millis": 1007 },
-	{ "text": "This is text index 8", "millis": 1008 },
-	{ "text": "This is text index 9", "millis": 1009 },
-	{ "text": "This is text index 10", "millis": 1010 }
+	{ "text": "This is text index 4", "millis": 904 },
+	{ "text": "This is text index 5", "millis": 805 },
+	{ "text": "This is text index 6", "millis": 706 },
+	{ "text": "This is text index 7", "millis": 607 },
+	{ "text": "This is text index 8", "millis": 508 },
+	{ "text": "This is text index 9", "millis": 409 },
+	{ "text": "This is text index 10", "millis": 310 }
 ]
 `), 0666))
 
 	main()
 
+	is.FileExists(outputFile)
 }

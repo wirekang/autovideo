@@ -12,7 +12,6 @@ type Config struct {
 	FontColor       string `json:"font_color"`
 	BackgroundColor string `json:"background_color"`
 	FontName        string `json:"font_name"`
-	FilePrefix      string `json:"file_prefix"`
 }
 
 func Default() (string, error) {
@@ -23,7 +22,6 @@ func Default() (string, error) {
 		FontColor:       "#000",
 		BackgroundColor: "#fff",
 		FontName:        "D2Coding.ttf",
-		FilePrefix:      "image",
 	}, "", "  ")
 	if err != nil {
 		return "{}", err

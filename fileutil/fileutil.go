@@ -1,6 +1,7 @@
 package fileutil
 
 import (
+	"fmt"
 	"os"
 )
 
@@ -19,4 +20,8 @@ func Count(path string, includeDir bool) (int, error) {
 	}
 
 	return count, nil
+}
+
+func ImageName(prefix string, index int) string {
+	return fmt.Sprintf("%s%04d.png", prefix, index)
 }
