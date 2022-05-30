@@ -1,52 +1,42 @@
-package imageConcater
+package audioConcater
 
 import (
 	"fmt"
 	"os"
 	"path"
+	"sort"
 
 	"github.com/samber/lo"
 	ffmpeg_go "github.com/u2takey/ffmpeg-go"
 	"github.com/wirekang/autovideo/fileutil"
-	"github.com/wirekang/autovideo/script"
 )
 
-type ImageConcater struct {
+type AudioConcater struct {
 	inputDir   string
 	outputFile string
-	filePrefix string
-	lines      []script.Line
 }
 
 type Option struct {
-	InputDir        string
-	OutputFile      string
-	ImageFilePrefix string
-	Lines           []script.Line
+	InputDir   string
+	OutputFile string
 }
 
-func New(o Option) *ImageConcater {
+func New(o Option) *AudioConcater {
 	c := lo.Must(fileutil.Count(o.InputDir, false))
 	if c == 0 {
 		panic(fmt.Errorf("no files in %s", o.InputDir))
 	}
 
-	if c != len(o.Lines) {
-		panic(fmt.Errorf("lines length <-> images count mismatch: %d <-> %d", len(o.Lines), c))
-	}
-
 	lo.Must0(fileutil.MkdirAll(path.Dir(o.OutputFile)))
-	return &ImageConcater{
+	return &AudioConcater{
 		inputDir:   o.InputDir,
 		outputFile: o.OutputFile,
-		filePrefix: o.ImageFilePrefix,
-		lines:      o.Lines,
 	}
 }
 
-func (i *ImageConcater) Concat() error {
+func (i *AudioConcater) Concat() error {
 	_ = os.Remove(i.outputFile)
-	const name = "images.ffconcat"
+	const name = "audios.ffconcat"
 	defer func() {
 		_ = os.Remove(name)
 	}()
@@ -59,19 +49,27 @@ func (i *ImageConcater) Concat() error {
 	return ffmpeg_go.Input(name).Output(i.outputFile).Run()
 }
 
-func (i *ImageConcater) makeFFConcat(filepath string) error {
+func (i *AudioConcater) makeFFConcat(filepath string) error {
 	f, err := os.Create(filepath)
 	if err != nil {
 		return err
 	}
 
+	files, err := os.ReadDir(i.inputDir)
+	if err != nil {
+		return err
+	}
+
+	sort.Slice(files, func(i, j int) bool {
+		return fileutil.ModTime(files[i]).Before(fileutil.ModTime(files[j]))
+	})
+
 	var v []string
 
 	v = append(v, "ffconcat version 1.0")
-	for j, l := range i.lines {
-		imagePath := fileutil.ImageName(i.filePrefix, j)
-		imagePath = path.Join(i.inputDir, imagePath)
-		v = append(v, fmt.Sprintf("file '%s'\nduration %.2f", imagePath, float64(l.Millis)/1000))
+	for _, file := range files {
+		audioPath := path.Join(i.inputDir, file.Name())
+		v = append(v, fmt.Sprintf("file '%s'", audioPath))
 	}
 
 	for _, s := range v {

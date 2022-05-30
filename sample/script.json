@@ -1,0 +1,13 @@
+[
+  { "text": "This is text index 0", "millis": 4000 },
+  { "text": "This is text index 1", "millis": 3001 },
+  { "text": "This is text index 2", "millis": 2002 },
+  { "text": "This is text index 3", "millis": 1003 },
+  { "text": "This is text index 4", "millis": 904 },
+  { "text": "This is text index 5", "millis": 805 },
+  { "text": "This is text index 6", "millis": 706 },
+  { "text": "This is text index 7", "millis": 607 },
+  { "text": "This is text index 8", "millis": 508 },
+  { "text": "This is text index 9", "millis": 409 },
+  { "text": "This is text index 10", "millis": 310 }
+]

@@ -3,7 +3,6 @@ package imageSaver
 import (
 	"fmt"
 	"image/color"
-	"os"
 	"path"
 
 	"github.com/flopp/go-findfont"
@@ -41,7 +40,8 @@ func New(o Option) *ImageSaver {
 	fontColor := lo.Must(colorutil.ParseHexColor(o.FontColor))
 	bgColor := lo.Must(colorutil.ParseHexColor(o.BackgroundColor))
 	fontFace := lo.Must(loadFontFace(o.FontName, o.FontPoints))
-	lo.Must0(os.MkdirAll(o.OutputDir, os.ModeDir))
+
+	lo.Must0(fileutil.MkdirAll(o.OutputDir))
 
 	return &ImageSaver{
 		outputDir:  o.OutputDir,

@@ -2,4 +2,4 @@ dev:
 	go run main.go $(ARGS)
 
 test:
-	go test -v ./...
+	go test -v tests/* && go test -v

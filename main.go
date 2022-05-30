@@ -5,7 +5,9 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/spf13/pflag"
+	"github.com/wirekang/autovideo/audioConcater"
 	"github.com/wirekang/autovideo/config"
+	"github.com/wirekang/autovideo/ffmpegutil"
 	"github.com/wirekang/autovideo/imageConcater"
 	"github.com/wirekang/autovideo/imageSaver"
 	"github.com/wirekang/autovideo/script"
@@ -13,6 +15,8 @@ import (
 
 const imagesDir = "images"
 const imageFilePrefix = "image_"
+const videoOutputFilePath = "video.mp4"
+const audioOutputFilePath = "audio.mp3"
 
 func main() {
 	var configFilePath string
@@ -61,16 +65,31 @@ func main() {
 		panic(fmt.Errorf("can't save images: %w", err))
 	}
 
-	concater := imageConcater.New(imageConcater.Option{
+	ic := imageConcater.New(imageConcater.Option{
 		InputDir:        imagesDir,
 		ImageFilePrefix: imageFilePrefix,
-		OutputFile:      outputFilePath,
+		OutputFile:      videoOutputFilePath,
 		Lines:           lines,
 	})
 
-	err = concater.ConcatImages()
+	err = ic.Concat()
 	if err != nil {
 		panic(fmt.Errorf("cant' concat images: %w", err))
+	}
+
+	ac := audioConcater.New(audioConcater.Option{
+		InputDir:   audiosDirPath,
+		OutputFile: audioOutputFilePath,
+	})
+
+	err = ac.Concat()
+	if err != nil {
+		panic(fmt.Errorf("cant' concat audios: %w", err))
+	}
+
+	err = ffmpegutil.Merge(audioOutputFilePath, videoOutputFilePath, outputFilePath)
+	if err != nil {
+		panic(err)
 	}
 
 }

@@ -2,7 +2,9 @@ package fileutil
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
+	"time"
 )
 
 func Count(path string, includeDir bool) (int, error) {
@@ -24,4 +26,14 @@ func Count(path string, includeDir bool) (int, error) {
 
 func ImageName(prefix string, index int) string {
 	return fmt.Sprintf("%s%04d.png", prefix, index)
+}
+
+func MkdirAll(dir string) error {
+	_ = os.Remove(dir)
+	return os.MkdirAll(dir, os.ModeDir)
+}
+
+func ModTime(entry fs.DirEntry) time.Time {
+	i, _ := entry.Info()
+	return i.ModTime()
 }
