@@ -9,21 +9,21 @@ import (
 	"github.com/samber/lo"
 	ffmpeg_go "github.com/u2takey/ffmpeg-go"
 	"github.com/wirekang/autovideo/fileutil"
-	"github.com/wirekang/autovideo/line"
+	"github.com/wirekang/autovideo/script"
 )
 
 type ImageConcater struct {
 	inputDir   string
 	outputFile string
 	filePrefix string
-	lines      []line.Line
+	lines      []script.Line
 }
 
 type Option struct {
 	InputDir        string
 	OutputFile      string
 	ImageFilePrefix string
-	Lines           []line.Line
+	Lines           []script.Line
 }
 
 func New(o Option) *ImageConcater {

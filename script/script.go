@@ -1,8 +1,9 @@
-package line
+package script
 
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 )
 
 type Line struct {
@@ -10,9 +11,14 @@ type Line struct {
 	Millis int
 }
 
-func ParseLines(v []byte) ([]Line, error) {
+func Parse(filepath string) ([]Line, error) {
+	v, err := os.ReadFile(filepath)
+	if err != nil {
+		return nil, fmt.Errorf("can't read script file: %w", err)
+	}
+
 	var lines []Line
-	err := json.Unmarshal(v, &lines)
+	err = json.Unmarshal(v, &lines)
 	if err != nil {
 		return nil, err
 	}

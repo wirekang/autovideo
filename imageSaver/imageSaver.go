@@ -11,7 +11,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/wirekang/autovideo/colorutil"
 	"github.com/wirekang/autovideo/fileutil"
-	"github.com/wirekang/autovideo/line"
+	"github.com/wirekang/autovideo/script"
 	"golang.org/x/image/font"
 )
 
@@ -22,7 +22,7 @@ type ImageSaver struct {
 	fontFace         font.Face
 	outputDir        string
 	filePrefix       string
-	lines            []line.Line
+	lines            []script.Line
 }
 
 type Option struct {
@@ -33,7 +33,7 @@ type Option struct {
 	FontColor,
 	BackgroundColor string
 	OutputDir       string
-	Lines           []line.Line
+	Lines           []script.Line
 	ImageFilePrefix string
 }
 
@@ -76,7 +76,7 @@ func (i *ImageSaver) SaveImages() error {
 	return nil
 }
 
-func fmtLine(l line.Line) string {
+func fmtLine(l script.Line) string {
 	return fmt.Sprintf("%.5s...", l.Text)
 }
 

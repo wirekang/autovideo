@@ -2,50 +2,44 @@ package main
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/samber/lo"
 	"github.com/spf13/pflag"
 	"github.com/wirekang/autovideo/config"
 	"github.com/wirekang/autovideo/imageConcater"
 	"github.com/wirekang/autovideo/imageSaver"
-	"github.com/wirekang/autovideo/line"
+	"github.com/wirekang/autovideo/script"
 )
 
 const imagesDir = "images"
 const imageFilePrefix = "image_"
 
 func main() {
-	var configFile string
-	var initConfig bool
-	var outputFile string
-	var linesFile string
+	var configFilePath string
+	var isInitConfig bool
 
-	pflag.StringVarP(&configFile, "config", "c", "autovideo.json", "config file path")
-	pflag.BoolVar(&initConfig, "init", false, "create default config file")
-	pflag.StringVarP(&outputFile, "output", "o", "out.mp4", "output file name")
+	var outputFilePath string
+	var scriptFileDir string
+	var audiosDirPath string
+
+	pflag.StringVarP(&configFilePath, "config", "c", "autovideo.json", "config file path")
+	pflag.BoolVar(&isInitConfig, "init", false, "create default config file")
+	pflag.StringVarP(&outputFilePath, "output", "o", "out.mp4", "output file name")
+	pflag.StringVarP(&audiosDirPath, "audios", "a", "audios", "audio files directory")
+	pflag.StringVarP(&scriptFileDir, "script", "s", "script.json", "script file")
 	pflag.Parse()
-	linesFile = pflag.Arg(0)
 
-	if initConfig {
-		v := lo.Must(config.Default())
-		lo.Must0(os.WriteFile(configFile, []byte(v), 0666))
-		fmt.Printf("config file created: %s\n", configFile)
+	if isInitConfig {
+		lo.Must0(config.Init(configFilePath))
 		return
 	}
 
-	input, err := os.ReadFile(linesFile)
+	lines, err := script.Parse(scriptFileDir)
 	if err != nil {
-		fmt.Printf("%s <lines.json>\n\n", os.Args[0])
-		panic(fmt.Errorf("can't read lines: %w", err))
+		panic(fmt.Errorf("can't parse script file: %w", err))
 	}
 
-	lines, err := line.ParseLines(input)
-	if err != nil {
-		panic(fmt.Errorf("can't parse lines: %w", err))
-	}
-
-	cfg, err := config.Parse(configFile)
+	cfg, err := config.Parse(configFilePath)
 	if err != nil {
 		panic(err)
 	}
@@ -70,7 +64,7 @@ func main() {
 	concater := imageConcater.New(imageConcater.Option{
 		InputDir:        imagesDir,
 		ImageFilePrefix: imageFilePrefix,
-		OutputFile:      outputFile,
+		OutputFile:      outputFilePath,
 		Lines:           lines,
 	})
 

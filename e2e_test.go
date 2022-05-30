@@ -32,8 +32,8 @@ func TestTest1(t *testing.T) {
 
 	outputFile := "output.mp4"
 	cfgPath := "testconfigname.json"
-	linesPath := "lines.json"
-	tests.SetArgs("--config="+cfgPath, "--output="+outputFile, linesPath)
+	scriptPath := "script.json"
+	tests.SetArgs("--config="+cfgPath, "--output="+outputFile, "--script="+scriptPath)
 
 	is.Nil(os.WriteFile(cfgPath, []byte(fmt.Sprintf(`
 {
@@ -46,7 +46,7 @@ func TestTest1(t *testing.T) {
 }
 `)), 0666))
 
-	is.Nil(os.WriteFile(linesPath, []byte(`
+	is.Nil(os.WriteFile(scriptPath, []byte(`
 [
 	{ "text": "This is text index 0", "millis": 4000 },
 	{ "text": "This is text index 1", "millis": 3001 },

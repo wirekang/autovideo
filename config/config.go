@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
@@ -14,7 +15,22 @@ type Config struct {
 	FontName        string `json:"font_name"`
 }
 
-func Default() (string, error) {
+func Init(filepath string) (err error) {
+	v, err := defaultString()
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(filepath, []byte(v), 0666)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("config file created: %s\n", filepath)
+	return nil
+}
+
+func defaultString() (string, error) {
 	v, err := json.MarshalIndent(Config{
 		ImageWidth:      1280,
 		ImageHeight:     720,

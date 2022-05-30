@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/wirekang/autovideo/fileutil"
 	"github.com/wirekang/autovideo/imageSaver"
-	"github.com/wirekang/autovideo/line"
+	"github.com/wirekang/autovideo/script"
 )
 
 func TestImageSaver(t *testing.T) {
@@ -14,7 +14,7 @@ func TestImageSaver(t *testing.T) {
 	CdTempDir()
 	outputDir := "images"
 
-	lines := []line.Line{
+	lines := []script.Line{
 		{"Hello", 0},
 		{"Word", 0},
 		{"Hello", 0},
@@ -63,7 +63,7 @@ func TestImageSaverTooLong(t *testing.T) {
 	CdTempDir()
 	imagesOutput := "images"
 
-	lines := []line.Line{
+	lines := []script.Line{
 		{"Hello", 0},
 		{"Word", 0},
 		{"Hello", 0},
