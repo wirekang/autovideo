@@ -34,6 +34,7 @@ func main() {
 
 	input, err := os.ReadFile(linesJsonPath)
 	if err != nil {
+		fmt.Printf("%s <lines.json>\n\n", os.Args[0])
 		panic(fmt.Errorf("can't read lines: %w", err))
 	}
 
