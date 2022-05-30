@@ -6,7 +6,7 @@ import (
 	"path"
 
 	"github.com/samber/lo"
-	ffmpeg_go "github.com/u2takey/ffmpeg-go"
+	"github.com/wirekang/autovideo/ffmpegutil"
 	"github.com/wirekang/autovideo/fileutil"
 	"github.com/wirekang/autovideo/script"
 )
@@ -45,10 +45,10 @@ func New(o Option) *ImageConcater {
 }
 
 func (i *ImageConcater) Concat() error {
-	_ = os.Remove(i.outputFile)
+	fileutil.TryRemove(i.outputFile)
 	const name = "images.ffconcat"
 	defer func() {
-		_ = os.Remove(name)
+		fileutil.TryRemove(name)
 	}()
 
 	err := i.makeFFConcat(name)
@@ -56,7 +56,7 @@ func (i *ImageConcater) Concat() error {
 		return err
 	}
 
-	return ffmpeg_go.Input(name).Output(i.outputFile).Run()
+	return ffmpegutil.InputOutput(name, i.outputFile)
 }
 
 func (i *ImageConcater) makeFFConcat(filepath string) error {

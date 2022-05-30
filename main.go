@@ -8,6 +8,7 @@ import (
 	"github.com/wirekang/autovideo/audioConcater"
 	"github.com/wirekang/autovideo/config"
 	"github.com/wirekang/autovideo/ffmpegutil"
+	"github.com/wirekang/autovideo/fileutil"
 	"github.com/wirekang/autovideo/imageConcater"
 	"github.com/wirekang/autovideo/imageSaver"
 	"github.com/wirekang/autovideo/script"
@@ -59,6 +60,9 @@ func main() {
 		BackgroundColor: cfg.BackgroundColor,
 		Lines:           lines,
 	})
+	defer func() {
+		fileutil.TryRemove(imagesDir)
+	}()
 
 	err = saver.SaveImages()
 	if err != nil {

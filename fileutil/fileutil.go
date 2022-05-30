@@ -37,3 +37,8 @@ func ModTime(entry fs.DirEntry) time.Time {
 	i, _ := entry.Info()
 	return i.ModTime()
 }
+
+func TryRemove(filepath string) {
+	_ = os.RemoveAll(filepath)
+	_ = os.Remove(filepath)
+}

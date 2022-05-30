@@ -7,7 +7,7 @@ import (
 	"sort"
 
 	"github.com/samber/lo"
-	ffmpeg_go "github.com/u2takey/ffmpeg-go"
+	"github.com/wirekang/autovideo/ffmpegutil"
 	"github.com/wirekang/autovideo/fileutil"
 )
 
@@ -35,10 +35,10 @@ func New(o Option) *AudioConcater {
 }
 
 func (i *AudioConcater) Concat() error {
-	_ = os.Remove(i.outputFile)
+	fileutil.TryRemove(i.outputFile)
 	const name = "audios.ffconcat"
 	defer func() {
-		_ = os.Remove(name)
+		fileutil.TryRemove(name)
 	}()
 
 	err := i.makeFFConcat(name)
@@ -46,7 +46,7 @@ func (i *AudioConcater) Concat() error {
 		return err
 	}
 
-	return ffmpeg_go.Input(name).Output(i.outputFile).Run()
+	return ffmpegutil.InputOutput(name, i.outputFile)
 }
 
 func (i *AudioConcater) makeFFConcat(filepath string) error {
