@@ -32,7 +32,7 @@ func main() {
 	pflag.BoolVar(&isInitConfig, "init", false, "create default config file")
 	pflag.StringVarP(&configFilePath, "config", "c", "autovideo.json", "config file path")
 
-	pflag.StringVar(&txtFilePath, "txt", "", "plain text file for script")
+	pflag.StringVar(&txtFilePath, "txt", "txt.txt", "plain text file for script")
 
 	pflag.StringVarP(&outputFilePath, "output", "o", "out.mp4", "output file name")
 	pflag.StringVarP(&audiosDirPath, "audios", "a", "audios", "audio files directory")

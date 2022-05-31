@@ -32,9 +32,9 @@ func defaultString() (string, error) {
 	v, err := json.MarshalIndent(Config{
 		ImageWidth:      1280,
 		ImageHeight:     720,
-		FontSize:        64,
-		FontColor:       "#000",
-		BackgroundColor: "#fff",
+		FontSize:        40,
+		FontColor:       "#fff",
+		BackgroundColor: "#222",
 		FontName:        "D2Coding.ttf",
 	}, "", "  ")
 	if err != nil {
