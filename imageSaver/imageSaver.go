@@ -90,8 +90,8 @@ func draw(c *gg.Context, text string) error {
 	canvasH := c.Height()
 	textW, textH := c.MeasureString(text)
 	textX := (float64(canvasW) - (textW)) / 2
-	textY := (float64(canvasH) - (textH)) / 2
-	if textW >= float64(canvasW)*0.9 {
+	textY := (float64(canvasH) + textH) / 2
+	if textW >= float64(canvasW)-40 {
 		return fmt.Errorf("text is too long")
 	}
 

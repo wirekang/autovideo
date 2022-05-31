@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os/exec"
 
 	"github.com/samber/lo"
 	"github.com/spf13/pflag"
@@ -20,34 +21,48 @@ const videoOutputFilePath = "video.mp4"
 const audioOutputFilePath = "audio.mp3"
 
 func main() {
-	var configFilePath string
 	var isInitConfig bool
+	var configFilePath string
+
+	var txtFilePath string
 
 	var outputFilePath string
-	var scriptFileDir string
 	var audiosDirPath string
 
-	pflag.StringVarP(&configFilePath, "config", "c", "autovideo.json", "config file path")
 	pflag.BoolVar(&isInitConfig, "init", false, "create default config file")
+	pflag.StringVarP(&configFilePath, "config", "c", "autovideo.json", "config file path")
+
+	pflag.StringVar(&txtFilePath, "txt", "", "plain text file for script")
+
 	pflag.StringVarP(&outputFilePath, "output", "o", "out.mp4", "output file name")
 	pflag.StringVarP(&audiosDirPath, "audios", "a", "audios", "audio files directory")
-	pflag.StringVarP(&scriptFileDir, "script", "s", "script.json", "script file")
 	pflag.Parse()
 
 	if isInitConfig {
+		fmt.Println("create default config file to", configFilePath)
 		lo.Must0(config.Init(configFilePath))
 		return
 	}
 
-	lines, err := script.Parse(scriptFileDir)
-	if err != nil {
-		panic(fmt.Errorf("can't parse script file: %w", err))
+	if txtFilePath == "" {
+		fmt.Println("no --txt")
+		return
 	}
 
-	cfg, err := config.Parse(configFilePath)
-	if err != nil {
-		panic(err)
-	}
+	fmt.Println("parse config from", configFilePath)
+	cfg := lo.Must(config.Parse(configFilePath))
+
+	ac := audioConcater.New(audioConcater.Option{
+		InputDir:   audiosDirPath,
+		OutputFile: audioOutputFilePath,
+	})
+
+	fmt.Println("merge all audio files")
+	lo.Must0(ac.Concat())
+
+	lo.Must0(exec.Command("cmd", "/c", "start", audioOutputFilePath).Run())
+	fmt.Println("generate script from", txtFilePath)
+	lines := lo.Must(script.Generate(txtFilePath))
 
 	saver := imageSaver.New(imageSaver.Option{
 		OutputDir:       imagesDir,
@@ -64,10 +79,8 @@ func main() {
 		fileutil.TryRemove(imagesDir)
 	}()
 
-	err = saver.SaveImages()
-	if err != nil {
-		panic(fmt.Errorf("can't save images: %w", err))
-	}
+	fmt.Println("generate images")
+	lo.Must0(saver.SaveImages())
 
 	ic := imageConcater.New(imageConcater.Option{
 		InputDir:        imagesDir,
@@ -75,25 +88,9 @@ func main() {
 		OutputFile:      videoOutputFilePath,
 		Lines:           lines,
 	})
+	fmt.Println("generate video from images")
+	lo.Must0(ic.Concat())
 
-	err = ic.Concat()
-	if err != nil {
-		panic(fmt.Errorf("cant' concat images: %w", err))
-	}
-
-	ac := audioConcater.New(audioConcater.Option{
-		InputDir:   audiosDirPath,
-		OutputFile: audioOutputFilePath,
-	})
-
-	err = ac.Concat()
-	if err != nil {
-		panic(fmt.Errorf("cant' concat audios: %w", err))
-	}
-
-	err = ffmpegutil.Merge(audioOutputFilePath, videoOutputFilePath, outputFilePath)
-	if err != nil {
-		panic(err)
-	}
-
+	fmt.Println("merge video with audio to", outputFilePath)
+	lo.Must0(ffmpegutil.Merge(audioOutputFilePath, videoOutputFilePath, outputFilePath))
 }

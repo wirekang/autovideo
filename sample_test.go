@@ -31,7 +31,7 @@ func TestInit(t *testing.T) {
 }
 
 func TestTest1(t *testing.T) {
-	// is := assert.New(t)
+	is := assert.New(t)
 
 	outputFile := "output.mp4"
 	cfgPath := "config.json"
@@ -45,5 +45,5 @@ func TestTest1(t *testing.T) {
 	)
 	main()
 
-	// is.FileExists(outputFile)
+	is.FileExists(outputFile)
 }

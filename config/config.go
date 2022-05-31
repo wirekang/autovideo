@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 )
 
@@ -26,7 +25,6 @@ func Init(filepath string) (err error) {
 		return err
 	}
 
-	fmt.Printf("config file created: %s\n", filepath)
 	return nil
 }
 
