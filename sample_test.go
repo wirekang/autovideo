@@ -29,21 +29,3 @@ func TestInit(t *testing.T) {
 	is.JSONEq(string(v), string(v))
 	is.Nil(os.Remove(configJson))
 }
-
-func TestTest1(t *testing.T) {
-	is := assert.New(t)
-
-	outputFile := "output.mp4"
-	cfgPath := "config.json"
-	scriptPath := "script.json"
-	audiosPath := "audios"
-	tests.SetArgs(
-		"--config="+cfgPath,
-		"--script="+scriptPath,
-		"--audios="+audiosPath,
-		"--output="+outputFile,
-	)
-	main()
-
-	is.FileExists(outputFile)
-}
