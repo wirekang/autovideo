@@ -6,12 +6,15 @@ import (
 )
 
 type Config struct {
-	ImageWidth      int    `json:"image_width"`
-	ImageHeight     int    `json:"image_height"`
-	FontSize        int    `json:"font_size"`
-	FontColor       string `json:"font_color"`
-	BackgroundColor string `json:"background_color"`
-	FontName        string `json:"font_name"`
+	ImageWidth               int    `json:"image_width"`
+	ImageHeight              int    `json:"image_height"`
+	FontSize                 int    `json:"font_size"`
+	FontColor                string `json:"font_color"`
+	BackgroundColor          string `json:"background_color"`
+	FontName                 string `json:"font_name"`
+	ThumbnailFontSize        int    `json:"thumbnail_font_size"`
+	ThumbnailFontColor       string `json:"thumbnail_font_color"`
+	ThumbnailBackgroundColor string `json:"thumbnail_background_color"`
 }
 
 func Init(filepath string) (err error) {
@@ -30,12 +33,15 @@ func Init(filepath string) (err error) {
 
 func defaultString() (string, error) {
 	v, err := json.MarshalIndent(Config{
-		ImageWidth:      1280,
-		ImageHeight:     720,
-		FontSize:        40,
-		FontColor:       "#fff",
-		BackgroundColor: "#222",
-		FontName:        "D2Coding.ttf",
+		ImageWidth:               1280,
+		ImageHeight:              720,
+		FontSize:                 40,
+		FontColor:                "#fff",
+		BackgroundColor:          "#222",
+		FontName:                 "D2Coding.ttf",
+		ThumbnailFontSize:        64,
+		ThumbnailFontColor:       "#fff",
+		ThumbnailBackgroundColor: "#222",
 	}, "", "  ")
 	if err != nil {
 		return "{}", err

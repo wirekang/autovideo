@@ -1,6 +1,7 @@
 package script
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -12,47 +13,60 @@ import (
 )
 
 type Line struct {
-	Text   string
-	Millis int
+	Text     string `json:"t"`
+	Duration int    `json:"d"`
 }
 
-// func Parse(filepath string) ([]Line, error) {
-// 	v, err := os.ReadFile(filepath)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("can't read script file: %w", err)
-// 	}
-//
-// 	var lines []Line
-// 	err = json.Unmarshal(v, &lines)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	if len(lines) < 3 {
-// 		return nil, fmt.Errorf("len(lines) is too short: %d", len(lines))
-// 	}
-//
-// 	for i, line := range lines {
-// 		if line.Millis < 10 {
-// 			return nil, fmt.Errorf("line %d millis is too short: %d", i, line.Millis)
-// 		}
-// 	}
-//
-// 	return lines, nil
-// }
+func ExtractThumbnail(filepath string) (string, []string, error) {
+	v, err := os.ReadFile(filepath)
+	if err != nil {
+		return "", nil, fmt.Errorf("can't extract thumbnail: %w", err)
+	}
 
-func Generate(txtFilePath string) ([]Line, error) {
-	bytes, err := os.ReadFile(txtFilePath)
+	lines := strings.Split(string(v), "\n")
+	if len(lines) < 3 {
+		return "", nil, fmt.Errorf("file is too short")
+	}
+
+	return lines[0], lines[1:], nil
+}
+
+func SaveLines(lines []Line, filepath string) error {
+	v, err := json.Marshal(lines)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(filepath, v, 0666)
+}
+
+func LoadLines(filepath string) ([]Line, error) {
+	v, err := os.ReadFile(filepath)
+	if err != nil {
+		return nil, fmt.Errorf("can't read script file: %w", err)
+	}
+
+	var lines []Line
+	err = json.Unmarshal(v, &lines)
 	if err != nil {
 		return nil, err
 	}
 
-	texts := strings.Split(string(bytes), "\n")
-	if len(texts) < 3 {
-		return nil, fmt.Errorf("%s is too short", txtFilePath)
+	if len(lines) < 3 {
+		return nil, fmt.Errorf("len(lines) is too short: %d", len(lines))
 	}
 
-	durations := make([]int, len(texts))
+	for i, line := range lines {
+		if line.Duration < 10 {
+			return nil, fmt.Errorf("line %d millis is too short: %d", i, line.Duration)
+		}
+	}
+
+	return lines, nil
+}
+
+func GenerateLines(lineStrings []string) ([]Line, error) {
+	durations := make([]int, len(lineStrings))
 
 	currentIndex := 0
 	var startMillis, currentMillis int64
@@ -67,28 +81,28 @@ func Generate(txtFilePath string) ([]Line, error) {
 		var pre1, pre2, next1, next2 string
 
 		if currentIndex > 1 {
-			pre2 = color.HiBlackString(texts[currentIndex-2])
-			pre1 = color.HiBlackString(texts[currentIndex-1])
+			pre2 = color.HiBlackString(lineStrings[currentIndex-2])
+			pre1 = color.HiBlackString(lineStrings[currentIndex-1])
 		} else if currentIndex == 1 {
 			pre2 = borderString
-			pre1 = color.HiBlackString(texts[currentIndex-1])
+			pre1 = color.HiBlackString(lineStrings[currentIndex-1])
 		} else if currentIndex == 0 {
 			pre2 = ""
 			pre1 = borderString
 		}
 
-		if currentIndex < len(texts)-2 {
-			next1 = color.HiBlackString(texts[currentIndex+1])
-			next2 = color.HiBlackString(texts[currentIndex+2])
-		} else if currentIndex == len(texts)-2 {
-			next1 = color.HiBlackString(texts[currentIndex+1])
+		if currentIndex < len(lineStrings)-2 {
+			next1 = color.HiBlackString(lineStrings[currentIndex+1])
+			next2 = color.HiBlackString(lineStrings[currentIndex+2])
+		} else if currentIndex == len(lineStrings)-2 {
+			next1 = color.HiBlackString(lineStrings[currentIndex+1])
 			next2 = borderString
-		} else if currentIndex == len(texts)-1 {
+		} else if currentIndex == len(lineStrings)-1 {
 			next1 = borderString
 			next2 = ""
 		}
 
-		text := texts[currentIndex]
+		text := lineStrings[currentIndex]
 
 		fmt.Println(pre2)
 		fmt.Println(pre1)
@@ -118,7 +132,7 @@ func Generate(txtFilePath string) ([]Line, error) {
 	onNext := func() {
 		step()
 		currentIndex++
-		if currentIndex == len(texts) {
+		if currentIndex == len(lineStrings) {
 			stop()
 			return
 		}
@@ -126,7 +140,7 @@ func Generate(txtFilePath string) ([]Line, error) {
 	}
 
 	stopChan := make(chan error)
-	lines := make([]Line, len(texts))
+	lines := make([]Line, len(lineStrings))
 
 	onStop := func() {
 		go func() {
@@ -141,8 +155,8 @@ func Generate(txtFilePath string) ([]Line, error) {
 		screen.Clear()
 		for i := range lines {
 			lines[i] = Line{
-				Text:   texts[i],
-				Millis: durations[i],
+				Text:     lineStrings[i],
+				Duration: durations[i],
 			}
 		}
 		stopChan <- nil
@@ -154,7 +168,7 @@ func Generate(txtFilePath string) ([]Line, error) {
 		_ = inp.Start()
 	}()
 
-	err = <-stopChan
+	err := <-stopChan
 	return lines, err
 }
 

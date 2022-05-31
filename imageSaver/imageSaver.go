@@ -15,13 +15,18 @@ import (
 )
 
 type ImageSaver struct {
-	canvasW, canvasH int
-	fontColor        color.Color
-	bgColor          color.Color
-	fontFace         font.Face
-	outputDir        string
-	filePrefix       string
-	lines            []script.Line
+	canvasW, canvasH        int
+	fontColor               color.Color
+	bgColor                 color.Color
+	fontFace                font.Face
+	outputDir               string
+	filePrefix              string
+	lines                   []script.Line
+	thumbnail               string
+	thumbnailFontColor      color.Color
+	thumbnailBgColor        color.Color
+	thumbnailFontFace       font.Face
+	thumbnailOutputFilePath string
 }
 
 type Option struct {
@@ -31,9 +36,14 @@ type Option struct {
 	FontName   string
 	FontColor,
 	BackgroundColor string
-	OutputDir       string
-	Lines           []script.Line
-	ImageFilePrefix string
+	OutputDir                string
+	Lines                    []script.Line
+	ImageFilePrefix          string
+	ThumbnailOutputFilePath  string
+	Thumbnail                string
+	ThumbnailFontPoints      float64
+	ThumbnailFontColor       string
+	ThumbnailBackgroundColor string
 }
 
 func New(o Option) *ImageSaver {
@@ -41,18 +51,47 @@ func New(o Option) *ImageSaver {
 	bgColor := lo.Must(colorutil.ParseHexColor(o.BackgroundColor))
 	fontFace := lo.Must(loadFontFace(o.FontName, o.FontPoints))
 
+	sFontColor := lo.Must(colorutil.ParseHexColor(o.ThumbnailFontColor))
+	sBgColor := lo.Must(colorutil.ParseHexColor(o.ThumbnailBackgroundColor))
+	sFontFace := lo.Must(loadFontFace(o.FontName, o.ThumbnailFontPoints))
+
 	lo.Must0(fileutil.MkdirAll(o.OutputDir))
+	lo.Must0(fileutil.MkdirAll(path.Dir(o.ThumbnailOutputFilePath)))
 
 	return &ImageSaver{
-		outputDir:  o.OutputDir,
-		canvasW:    o.CanvasWidth,
-		canvasH:    o.CanvasHeight,
-		fontColor:  fontColor,
-		bgColor:    bgColor,
-		fontFace:   fontFace,
-		filePrefix: o.ImageFilePrefix,
-		lines:      o.Lines,
+		canvasW:                 o.CanvasWidth,
+		canvasH:                 o.CanvasHeight,
+		fontColor:               fontColor,
+		bgColor:                 bgColor,
+		fontFace:                fontFace,
+		outputDir:               o.OutputDir,
+		filePrefix:              o.ImageFilePrefix,
+		lines:                   o.Lines,
+		thumbnail:               o.Thumbnail,
+		thumbnailFontColor:      sFontColor,
+		thumbnailBgColor:        sBgColor,
+		thumbnailFontFace:       sFontFace,
+		thumbnailOutputFilePath: o.ThumbnailOutputFilePath,
 	}
+}
+
+func (i *ImageSaver) SaveThumbnail() error {
+	c := gg.NewContext(i.canvasW, i.canvasH)
+	c.SetFontFace(i.thumbnailFontFace)
+	c.SetColor(i.thumbnailBgColor)
+	c.Clear()
+	c.SetColor(i.thumbnailFontColor)
+	err := draw(c, i.thumbnail)
+	if err != nil {
+		return fmt.Errorf("can't draw thumbnail: %w", err)
+	}
+
+	err = c.SavePNG(i.thumbnailOutputFilePath)
+	if err != nil {
+		return fmt.Errorf("can't save thumbnail: %w", err)
+	}
+
+	return nil
 }
 
 func (i *ImageSaver) SaveImages() error {

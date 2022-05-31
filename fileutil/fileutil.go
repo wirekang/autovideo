@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"os/exec"
 	"time"
 )
 
@@ -41,4 +42,8 @@ func ModTime(entry fs.DirEntry) time.Time {
 func TryRemove(filepath string) {
 	_ = os.RemoveAll(filepath)
 	_ = os.Remove(filepath)
+}
+
+func Run(filepath string) error {
+	return exec.Command("cmd", "/c", "start", filepath).Run()
 }

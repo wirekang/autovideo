@@ -71,7 +71,7 @@ func (i *ImageConcater) makeFFConcat(filepath string) error {
 	for j, l := range i.lines {
 		imagePath := fileutil.ImageName(i.filePrefix, j)
 		imagePath = path.Join(i.inputDir, imagePath)
-		v = append(v, fmt.Sprintf("file '%s'\nduration %.2f", imagePath, float64(l.Millis)/1000))
+		v = append(v, fmt.Sprintf("file '%s'\nduration %.2f", imagePath, float64(l.Duration)/1000))
 	}
 
 	for _, s := range v {

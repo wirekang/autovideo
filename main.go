@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"os/exec"
 
+	"github.com/fatih/color"
 	"github.com/samber/lo"
 	"github.com/spf13/pflag"
 	"github.com/wirekang/autovideo/audioConcater"
@@ -15,6 +15,7 @@ import (
 	"github.com/wirekang/autovideo/script"
 )
 
+const thumbnailFilePath = "thumb.png"
 const imagesDir = "images"
 const imageFilePrefix = "image_"
 const videoOutputFilePath = "video.mp4"
@@ -26,6 +27,9 @@ func main() {
 
 	var txtFilePath string
 
+	var isReuseScript bool
+	var scriptFilePath string
+
 	var outputFilePath string
 	var audiosDirPath string
 
@@ -33,6 +37,9 @@ func main() {
 	pflag.StringVarP(&configFilePath, "config", "c", "autovideo.json", "config file path")
 
 	pflag.StringVar(&txtFilePath, "txt", "txt.txt", "plain text file for script")
+	pflag.StringVar(&scriptFilePath, "script", "script.json", "script file")
+
+	pflag.BoolVar(&isReuseScript, "reuse", false, "reuse script file")
 
 	pflag.StringVarP(&outputFilePath, "output", "o", "out.mp4", "output file name")
 	pflag.StringVarP(&audiosDirPath, "audios", "a", "audios", "audio files directory")
@@ -60,24 +67,44 @@ func main() {
 	fmt.Println("merge all audio files")
 	lo.Must0(ac.Concat())
 
-	lo.Must0(exec.Command("cmd", "/c", "start", audioOutputFilePath).Run())
-	fmt.Println("generate script from", txtFilePath)
-	lines := lo.Must(script.Generate(txtFilePath))
+	var lines []script.Line
+	thumbnail, lineStrings := lo.Must2(script.ExtractThumbnail(txtFilePath))
+	if isReuseScript {
+		fmt.Println("reuse script from", scriptFilePath)
+		lines = lo.Must(script.LoadLines(scriptFilePath))
+	} else {
+		fmt.Println("run", audioOutputFilePath)
+		lo.Must0(fileutil.Run(audioOutputFilePath))
+
+		fmt.Println("generate script from", txtFilePath)
+		lines = lo.Must(script.GenerateLines(lineStrings))
+
+		fmt.Println("save script to", scriptFilePath)
+		lo.Must0(script.SaveLines(lines, scriptFilePath))
+	}
 
 	saver := imageSaver.New(imageSaver.Option{
-		OutputDir:       imagesDir,
-		ImageFilePrefix: imageFilePrefix,
-		CanvasWidth:     cfg.ImageWidth,
-		CanvasHeight:    cfg.ImageHeight,
-		FontPoints:      float64(cfg.FontSize),
-		FontName:        cfg.FontName,
-		FontColor:       cfg.FontColor,
-		BackgroundColor: cfg.BackgroundColor,
-		Lines:           lines,
+		CanvasWidth:              cfg.ImageWidth,
+		CanvasHeight:             cfg.ImageHeight,
+		FontPoints:               float64(cfg.FontSize),
+		FontName:                 cfg.FontName,
+		FontColor:                cfg.FontColor,
+		BackgroundColor:          cfg.BackgroundColor,
+		OutputDir:                imagesDir,
+		Lines:                    lines,
+		ImageFilePrefix:          imageFilePrefix,
+		ThumbnailOutputFilePath:  thumbnailFilePath,
+		Thumbnail:                thumbnail,
+		ThumbnailFontPoints:      float64(cfg.ThumbnailFontSize),
+		ThumbnailFontColor:       cfg.ThumbnailFontColor,
+		ThumbnailBackgroundColor: cfg.ThumbnailBackgroundColor,
 	})
 	defer func() {
 		fileutil.TryRemove(imagesDir)
 	}()
+
+	fmt.Println("generate thumbnail to", thumbnailFilePath)
+	lo.Must0(saver.SaveThumbnail())
 
 	fmt.Println("generate images")
 	lo.Must0(saver.SaveImages())
@@ -91,6 +118,9 @@ func main() {
 	fmt.Println("generate video from images")
 	lo.Must0(ic.Concat())
 
-	fmt.Println("merge video with audio to", outputFilePath)
+	color.Blue(outputFilePath)
 	lo.Must0(ffmpegutil.Merge(audioOutputFilePath, videoOutputFilePath, outputFilePath))
 }
+
+// todo
+// (외부) 전체 플로우 자동화
