@@ -15,7 +15,6 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/wirekang/autovideo/exe"
-	"github.com/wirekang/autovideo/old/fileutil"
 )
 
 var DoNotDeleteTempFiles bool
@@ -95,7 +94,7 @@ func ListByModTime(dirPath string) ([]string, error) {
 	}
 
 	sort.Slice(entries, func(i, j int) bool {
-		return modTime(entries[i]).Before(fileutil.ModTime(entries[j]))
+		return modTime(entries[i]).Before(modTime(entries[j]))
 	})
 
 	paths := lo.Map(entries, func(e os.DirEntry, _ int) string {
