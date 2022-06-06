@@ -1,0 +1,13 @@
+{
+  "image_width": 1280,
+  "image_height": 720,
+  "font_name": "D2Coding.ttf",
+  
+  "font_size": 64,
+  "font_color": "#fff",
+  "background_color": "#000",
+
+  "thumbnail_font_size": 128,
+  "thumbnail_font_color": "#fff",
+  "thumbnail_background_color": "#000"
+}

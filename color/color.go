@@ -1,18 +1,17 @@
-package colorutil
+package color
 
 import (
-	"errors"
+	"fmt"
 	"image/color"
 )
 
-var ErrInvalidFormat = errors.New("invalid format")
-
 // ParseHexColor from https://stackoverflow.com/questions/54197913/parse-hex-string-to-image-color
 func ParseHexColor(s string) (c color.RGBA, err error) {
+	errInvalidFormat := fmt.Errorf("invalid color format: %s", s)
 	c.A = 0xff
 
 	if s[0] != '#' {
-		return c, ErrInvalidFormat
+		return c, errInvalidFormat
 	}
 
 	hexToByte := func(b byte) byte {
@@ -24,7 +23,7 @@ func ParseHexColor(s string) (c color.RGBA, err error) {
 		case b >= 'A' && b <= 'F':
 			return b - 'A' + 10
 		}
-		err = ErrInvalidFormat
+		err = errInvalidFormat
 		return 0
 	}
 
@@ -38,7 +37,7 @@ func ParseHexColor(s string) (c color.RGBA, err error) {
 		c.G = hexToByte(s[2]) * 17
 		c.B = hexToByte(s[3]) * 17
 	default:
-		err = ErrInvalidFormat
+		err = errInvalidFormat
 	}
 	return
 }
