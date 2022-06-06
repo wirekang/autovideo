@@ -28,9 +28,13 @@ func Parse(filePath string) (string, []string, error) {
 		return "", nil, err
 	}
 
-	if lines[len(lines)-1] == "" {
-		lines = lines[:len(lines)-1]
+	title := lines[0]
+	lines = lines[2:]
+	var rst []string
+	for _, line := range lines {
+		if line != "" {
+			rst = append(rst, line)
+		}
 	}
-
-	return lines[0], lines[2:], nil
+	return title, rst, nil
 }
