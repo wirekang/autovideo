@@ -32,9 +32,18 @@ func Parse(filePath string) (string, []string, error) {
 	lines = lines[2:]
 	var rst []string
 	for _, line := range lines {
+		if line == "###" {
+			break
+		}
+
 		if line != "" {
+			if line[0] == '#' {
+				continue
+			}
+
 			rst = append(rst, line)
 		}
+
 	}
 	return title, rst, nil
 }
