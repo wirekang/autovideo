@@ -33,8 +33,8 @@ func Generate(text string, outputFilePath string, o GenerateOption) error {
 	lines := c.WordWrap(text, w)
 	for _, line := range lines {
 		textW, textH := c.MeasureMultilineString(line, ls)
-		if textW >= w || textH >= float64(o.CanvasHeight)*0.9 {
-			return fmt.Errorf("text overflow: %s", line)
+		if textW > w || textH > float64(o.CanvasHeight)*0.9 {
+			return fmt.Errorf("text overflow: %s(%f) > %f", line, textW, w)
 		}
 	}
 
